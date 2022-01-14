@@ -48,6 +48,7 @@ Specify endpoint decorator logic (you can apply Nest.js decorators for example):
 // overrides.ts
 import { setEndpointDecorator } from 'typed-http-decorators';
 
+// You can add additional properties to EndpointOptions like this:
 declare module './rest' {
   interface EndpointOptions {
     permissions: string[];

@@ -19,8 +19,6 @@ npm i typed-http-decorators
 
 ## Usage
 
-<!-- TODO: add better docs -->
-
 Decorate endpoints:
 
 ```ts
@@ -68,7 +66,7 @@ declare module './rest' {
 }
 
 setEndpointDecorator((method, path, { permissions }) => (cls, endpointName) => {
-  // Endpoint decoration logic
+  // Your endpoint decoration logic:
   console.log(
     `Decorating ${cls.name}.${String(endpointName)}`,
     `with route ${method} /${path} with permissions: ${permissions}`
@@ -144,7 +142,7 @@ setEndpointDecorator((method, path, { responses, summary, description }) =>
 )
 ```
 
-Entrypoint
+Entrypoint:
 
 ```ts
 // Source: src/main.ts

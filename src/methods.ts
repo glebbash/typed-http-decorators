@@ -1,6 +1,5 @@
-import { EndpointDecorator, getEndpointDecorator } from './endpoint-decorator';
-import type { Type } from './type-utils';
-import { EndpointOptions, HttpMethod, HttpResponseType } from './typed-http-decorators';
+import { EndpointDecorator, EndpointOptions, getEndpointDecorator } from './endpoint-decorator';
+import { HttpMethod, HttpResponseType, Type } from './types';
 
 const newEndpointDecorator =
   (method: HttpMethod) =>

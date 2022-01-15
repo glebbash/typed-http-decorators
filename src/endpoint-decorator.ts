@@ -1,5 +1,12 @@
-import { HttpMethod, HttpResponse, HttpResponseType, HttpResponseTypes } from './http-types';
-import type { ArrayToUnion, InstanceOf, TypedPropertyDecorator } from './type-utils';
+import {
+  ArrayToUnion,
+  HttpMethod,
+  HttpResponse,
+  HttpResponseType,
+  HttpResponseTypes,
+  InstanceOf,
+  TypedPropertyDecorator,
+} from './types';
 
 export interface EndpointOptions<RTS extends HttpResponseTypes = HttpResponseTypes> {
   responses: RTS;

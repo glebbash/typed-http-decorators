@@ -1,5 +1,4 @@
-import { Type } from './type-utils';
-import { HttpResponse, HttpResponseType, HttpStatus } from './typed-http-decorators';
+import { HttpResponse, HttpResponseType, HttpStatus, Type } from './types';
 
 const newResponse = <C extends number>(status: C) =>
   Object.assign(

@@ -36,6 +36,7 @@ export class ResourceController {
     permissions: ['resource.get'],
     responses: [Ok.Type(ResourceDto), NotFound.Type(NotFoundDto)] as const,
   })
+  // You can remove return type annotation and still have type safety
   async getResource(): Promise<Ok<ResourceDto> | NotFound<NotFoundDto>> {
     return Ok(new ResourceDto('id', 'name'));
   }
@@ -59,7 +60,7 @@ setEndpointDecorator((method, path, { permissions }) => (cls, endpointName) => {
   // Endpoint decoration logic
   console.log(
     `Decorating ${cls.name}.${String(endpointName)}`,
-    `with route ${method} /${path} with permissions: ${permissions}`,
+    `with route ${method} /${path} with permissions: ${permissions}`
   );
 });
 ```

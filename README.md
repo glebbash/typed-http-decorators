@@ -3,7 +3,13 @@
 [![Deploy](https://github.com/glebbash/typed-http-decorators/workflows/build/badge.svg)](https://github.com/glebbash/typed-http-decorators/actions)
 [![Coverage Status](https://coveralls.io/repos/github/glebbash/typed-http-decorators/badge.svg?branch=master)](https://coveralls.io/github/glebbash/typed-http-decorators?branch=master)
 
-Typesafe decorators for HTTP endpoints
+Typesafe decorators for HTTP endpoints which integrates nicely with [Nest.js](https://nestjs.com).
+
+- [typed-http-decorators](#typed-http-decorators)
+  - [Installation](#installation)
+  - [Usage](#usage)
+  - [Nest.js integration](#nestjs-integration)
+  - [Testing](#testing)
 
 ## Installation
 
@@ -18,10 +24,14 @@ npm i typed-http-decorators
 Decorate endpoints:
 
 ```ts
-// main.ts
+// Source: main.ts
+
+/*
+!!! You must import your decorator logic before applying typed-http-decorators !!!
+*/
 import './overrides';
 
-import { Method, NotFound, Ok } from './rest';
+import { Method, NotFound, Ok } from 'typed-http-decorators';
 
 class NotFoundDto {
   constructor(public message: string) {}
@@ -43,10 +53,11 @@ export class ResourceController {
 }
 ```
 
-Specify endpoint decorator logic (you can apply Nest.js decorators for example):
+Specify endpoint decorator logic:
 
 ```ts
-// overrides.ts
+// Source: overrides.ts
+
 import { setEndpointDecorator } from 'typed-http-decorators';
 
 // You can add additional properties to EndpointOptions like this:
@@ -64,6 +75,110 @@ setEndpointDecorator((method, path, { permissions }) => (cls, endpointName) => {
   );
 });
 ```
+
+## Nest.js integration
+
+Controller example:
+
+```ts
+// Source: src/films/films.controller.ts
+
+import { Controller } from '@nestjs/common'
+import { ApiTags } from '@nestjs/swagger'
+import { Method, Ok } from 'typed-http-decorators'
+import { FilmsDto } from './dto/films.dto'
+import { FilmsService } from './films.service'
+
+@ApiTags('films')
+@Controller('films')
+export class FilmsController {
+    constructor(private films: FilmsService) {}
+
+    @Method.Get('', {
+        summary: 'Get all films',
+        description: 'Gets all films from the database',
+        responses: [Ok.Type(FilmsDto)] as const,
+    })
+    async getAllFilms() {
+        return Ok(
+          new FilmsDto({
+            films: [
+              new FilmDto('id', 'name'),
+              new FilmDto('id', 'name'),
+            ]
+          })
+        )
+    }
+}
+```
+
+Decorator logic:
+
+```ts
+// Source: src/common/http-decorators-logic.ts
+
+import { applyDecorators, RequestMapping, RequestMethod } from '@nestjs/common'
+import { ApiOperation, ApiResponse } from '@nestjs/swagger'
+import { setEndpointDecorator } from 'typed-http-decorators'
+
+declare module 'typed-http-decorators' {
+    interface EndpointOptions {
+        /* This way you force endpoint options to be specified */
+        summary: string
+        /* Or you can also make them optional */
+        description?: string
+    }
+}
+
+setEndpointDecorator((method, path, { responses, summary, description }) =>
+    applyDecorators(
+        // Apply Nest.js specific endpoint decorators
+        RequestMapping({ method: RequestMethod[method], path }),
+        ...responses.map(({ status, bodyType }) =>
+            ApiResponse({ status, type: bodyType }),
+        ),
+
+        // Apply your custom decorators
+        ApiOperation({ summary, description }),
+    ),
+)
+```
+
+Entrypoint
+
+```ts
+// Source: src/main.ts
+
+/*
+!!! Remember to have decorator logic as the first import !!!
+*/
+import './common/http-decorators-logic'
+import { NestFactory } from '@nestjs/core'
+import { AppModule } from '@/app.module'
+
+async function bootstrap() {
+    const app = await NestFactory.create(AppModule)
+    await app.listen(process.env.PORT ?? 3000)
+}
+bootstrap()
+```
+
+## Testing
+
+When testing your controllers you must also import your decorator logic before applying typed-http-decorators.
+
+You can do this automatically with [Jest](https://jestjs.io/):
+```jsonc
+{
+  // jest configuration ...
+  setupFiles: [
+    './src/common/http-decorators-logic.ts', // your decorator logic
+    // other setup files ...
+  ]
+}
+```
+
+If your testing framework does not support this feature you can manually import your decorator logic in the first import of each testing module.
 
 Bootstrapped with: [create-ts-lib-gh](https://github.com/glebbash/create-ts-lib-gh)
 

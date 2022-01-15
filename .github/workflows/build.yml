@@ -1,17 +1,20 @@
 name: build
-on: ["push", "pull_request"]
+on: ['push', 'pull_request']
 
 jobs:
   test:
     name: Build and test
     runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        node: [14, 16]
     steps:
       - uses: actions/checkout@v1
 
-      - name: Use Node.js 14
+      - name: Use Node.js ${{ matrix.node }}
         uses: actions/setup-node@v1
         with:
-          node-version: 14
+          node-version: ${{ matrix.node }}
 
       - name: Test and generate coverage
         run: |
@@ -19,6 +22,7 @@ jobs:
           npm run test:prod
 
       - name: Coveralls
+        if: matrix.node == 16
         uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -35,10 +39,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Use Node.js 14
+      - name: Use Node.js 16
         uses: actions/setup-node@v1
         with:
-          node-version: 14
+          node-version: 16
 
       - name: Install dependencies
         run: |

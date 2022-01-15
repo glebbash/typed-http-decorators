@@ -1,5 +1,5 @@
 import { EndpointDecorator, getEndpointDecorator } from './endpoint-decorator';
-import { Type } from './type-utils';
+import type { Type } from './type-utils';
 import { EndpointOptions, HttpMethod, HttpResponseType } from './typed-http-decorators';
 
 const newEndpointDecorator =

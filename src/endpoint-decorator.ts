@@ -1,11 +1,11 @@
 import { HttpMethod, HttpResponse, HttpResponseType, HttpResponseTypes } from './http-types';
-import { ArrayToUnion, InstanceOf, TypedPropertyDecorator } from './type-utils';
+import type { ArrayToUnion, InstanceOf, TypedPropertyDecorator } from './type-utils';
 
-export interface EndpointOptions<RTS = unknown> {
+export interface EndpointOptions<RTS extends HttpResponseTypes = HttpResponseTypes> {
   responses: RTS;
 }
 
-type ValueOf<RT> = RT extends HttpResponseType<infer C, infer BT>
+export type ValueOf<RT> = RT extends HttpResponseType<infer C, infer BT>
   ? HttpResponse<C, InstanceOf<BT>>
   : never;
 

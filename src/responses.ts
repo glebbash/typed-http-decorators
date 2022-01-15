@@ -13,10 +13,10 @@ const newResponse = <C extends number>(status: C) =>
     }
   );
 
-type GetType<R extends (...args: never[]) => HttpResponse<number, Type<unknown>>, T> = HttpResponse<
-  ReturnType<R>['status'],
+export type GetType<
+  R extends (...args: never[]) => HttpResponse<number, Type<unknown>>,
   T
->;
+> = HttpResponse<ReturnType<R>['status'], T>;
 
 export const Continue = newResponse(HttpStatus.CONTINUE);
 export const SwitchingProtocols = newResponse(HttpStatus.SWITCHING_PROTOCOLS);

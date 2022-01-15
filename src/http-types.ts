@@ -1,4 +1,4 @@
-import { Type } from './type-utils';
+import type { Type } from './type-utils';
 
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'ALL' | 'OPTIONS' | 'HEAD';
 

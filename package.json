@@ -8,10 +8,10 @@
     "typed",
     "typesafe"
   ],
-  "main": "dist/typed-http-decorators.js",
-  "types": "dist/typed-http-decorators.d.ts",
+  "main": "lib/typed-http-decorators.js",
+  "types": "lib/typed-http-decorators.d.ts",
   "files": [
-    "dist"
+    "lib"
   ],
   "author": "glebbash <glebbash@gmail.com>",
   "repository": {
@@ -24,7 +24,7 @@
   },
   "scripts": {
     "lint": "eslint --fix 'src/**/*.ts'",
-    "prebuild": "rimraf dist",
+    "prebuild": "rimraf lib",
     "build": "tsc --project tsconfig.build.json",
     "build:docs": "typedoc --out docs src/typed-http-decorators.ts",
     "test": "jest --config jest.config.ts --coverage",

@@ -81,7 +81,8 @@ Controller example:
 ```ts
 // Source: src/films/films.controller.ts
 
-import { Controller } from '@nestjs/common'
+import { TypedResponseInterceptor } from '../common/typed-response.interceptor'
+import { Controller, UseInterceptors } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 import { Method, Ok } from 'typed-http-decorators'
 import { FilmsDto } from './dto/films.dto'
@@ -89,6 +90,8 @@ import { FilmsService } from './films.service'
 
 @ApiTags('films')
 @Controller('films')
+/* You need to transform typed responses to the ones accepted bt Nest.js */
+@UseInterceptors(new TypedResponseInterceptor())
 export class FilmsController {
     constructor(private films: FilmsService) {}
 
@@ -142,6 +145,36 @@ setEndpointDecorator((method, path, { responses, summary, description }) =>
 )
 ```
 
+Typed responses interceptor:
+
+```ts
+// Source: src/common/typed-response.interceptor.ts
+
+import {
+    CallHandler,
+    ExecutionContext,
+    Injectable,
+    InternalServerErrorException,
+    NestInterceptor,
+} from '@nestjs/common'
+import { catchError, map, throwError } from 'rxjs'
+
+@Injectable()
+export class TypedResponseInterceptor implements NestInterceptor {
+    intercept(context: ExecutionContext, next: CallHandler) {
+        return next.handle().pipe(
+            map(({ status, body }) => {
+                context.switchToHttp().getResponse().status(status)
+                return body
+            }),
+            catchError(() =>
+                throwError(() => new InternalServerErrorException()),
+            ),
+        )
+    }
+}
+```
+
 Entrypoint:
 
 ```ts
@@ -159,6 +192,13 @@ async function bootstrap() {
     await app.listen(process.env.PORT ?? 3000)
 }
 bootstrap()
+```
+
+Note: If all your endpoints return typed responses
+you can apply TypedResponseInterceptor globally instead of applying it to each controller:
+
+```ts
+app.useGlobalInterceptors(new TypedResponseInterceptor())
 ```
 
 ## Testing

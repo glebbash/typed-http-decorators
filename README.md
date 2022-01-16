@@ -42,6 +42,7 @@ class ResourceDto {
 export class ResourceController {
   @Method.Get('resource/:resourceId', {
     permissions: ['resource.get'],
+    // !!! Do not forget to use `as const`, otherwise TypeScript reports type errors
     responses: [Ok.Type(ResourceDto), NotFound.Type(NotFoundDto)] as const,
   })
   // You can remove return type annotation and still have type safety
@@ -90,7 +91,7 @@ import { FilmsService } from './films.service'
 
 @ApiTags('films')
 @Controller('films')
-/* You need to transform typed responses to the ones accepted bt Nest.js */
+/* You need to transform typed responses to the ones accepted by Nest.js */
 @UseInterceptors(new TypedResponseInterceptor())
 export class FilmsController {
     constructor(private films: FilmsService) {}

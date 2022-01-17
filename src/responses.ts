@@ -1,20 +1,20 @@
-import { HttpResponse, HttpResponseType, HttpStatus, Type } from './types';
+import { HttpResponse, HttpResponseType, HttpStatus, InstanceOf, Type } from './types';
 
-const newResponse = <C extends number>(status: C) =>
+const newResponse = <Status extends number>(status: Status) =>
   Object.assign(
-    <B>(body: B): HttpResponse<C, B> => {
-      return { status: status, body };
+    <BodyType extends Type>(body: InstanceOf<BodyType>): HttpResponse<Status, BodyType> => {
+      return { status, body };
     },
     {
-      Type: <BT extends Type<unknown>>(bodyType: BT): HttpResponseType<C, BT> => {
-        return { status: status, bodyType };
+      Type: <BodyType extends Type>(body: BodyType): HttpResponseType<Status, BodyType> => {
+        return { status, body };
       },
     }
   );
 
 export type GetType<
-  R extends (...args: never[]) => HttpResponse<number, Type<unknown>>,
-  T
+  R extends (...args: never[]) => HttpResponse<number, Type>,
+  T extends Type
 > = HttpResponse<ReturnType<R>['status'], T>;
 
 export const Continue = newResponse(HttpStatus.CONTINUE);
@@ -65,50 +65,59 @@ export const ServiceUnavailable = newResponse(HttpStatus.SERVICE_UNAVAILABLE);
 export const GatewayTimeout = newResponse(HttpStatus.GATEWAY_TIMEOUT);
 export const HttpVersionNotSupported = newResponse(HttpStatus.HTTP_VERSION_NOT_SUPPORTED);
 
-export type Continue<T> = GetType<typeof Continue, T>;
-export type SwitchingProtocols<T> = GetType<typeof SwitchingProtocols, T>;
-export type Processing<T> = GetType<typeof Processing, T>;
-export type EarlyHints<T> = GetType<typeof EarlyHints, T>;
-export type Ok<T> = GetType<typeof Ok, T>;
-export type Created<T> = GetType<typeof Created, T>;
-export type Accepted<T> = GetType<typeof Accepted, T>;
-export type NonAuthoritativeInformation<T> = GetType<typeof NonAuthoritativeInformation, T>;
-export type NoContent<T> = GetType<typeof NoContent, T>;
-export type ResetContent<T> = GetType<typeof ResetContent, T>;
-export type PartialContent<T> = GetType<typeof PartialContent, T>;
-export type Ambiguous<T> = GetType<typeof Ambiguous, T>;
-export type MovedPermanently<T> = GetType<typeof MovedPermanently, T>;
-export type Found<T> = GetType<typeof Found, T>;
-export type SeeOther<T> = GetType<typeof SeeOther, T>;
-export type NotModified<T> = GetType<typeof NotModified, T>;
-export type TemporaryRedirect<T> = GetType<typeof TemporaryRedirect, T>;
-export type PermanentRedirect<T> = GetType<typeof PermanentRedirect, T>;
-export type BadRequest<T> = GetType<typeof BadRequest, T>;
-export type Unauthorized<T> = GetType<typeof Unauthorized, T>;
-export type PaymentRequired<T> = GetType<typeof PaymentRequired, T>;
-export type Forbidden<T> = GetType<typeof Forbidden, T>;
-export type NotFound<T> = GetType<typeof NotFound, T>;
-export type MethodNotAllowed<T> = GetType<typeof MethodNotAllowed, T>;
-export type NotAcceptable<T> = GetType<typeof NotAcceptable, T>;
-export type ProxyAuthenticationRequired<T> = GetType<typeof ProxyAuthenticationRequired, T>;
-export type RequestTimeout<T> = GetType<typeof RequestTimeout, T>;
-export type Conflict<T> = GetType<typeof Conflict, T>;
-export type Gone<T> = GetType<typeof Gone, T>;
-export type LengthRequired<T> = GetType<typeof LengthRequired, T>;
-export type PreconditionFailed<T> = GetType<typeof PreconditionFailed, T>;
-export type PayloadTooLarge<T> = GetType<typeof PayloadTooLarge, T>;
-export type UriTooLong<T> = GetType<typeof UriTooLong, T>;
-export type UnsupportedMediaType<T> = GetType<typeof UnsupportedMediaType, T>;
-export type RequestedRangeNotSatisfiable<T> = GetType<typeof RequestedRangeNotSatisfiable, T>;
-export type ExpectationFailed<T> = GetType<typeof ExpectationFailed, T>;
-export type IAmATeapot<T> = GetType<typeof IAmATeapot, T>;
-export type Misdirected<T> = GetType<typeof Misdirected, T>;
-export type UnprocessableEntity<T> = GetType<typeof UnprocessableEntity, T>;
-export type FailedDependency<T> = GetType<typeof FailedDependency, T>;
-export type TooManyRequests<T> = GetType<typeof TooManyRequests, T>;
-export type InternalServerError<T> = GetType<typeof InternalServerError, T>;
-export type NotImplemented<T> = GetType<typeof NotImplemented, T>;
-export type BadGateway<T> = GetType<typeof BadGateway, T>;
-export type ServiceUnavailable<T> = GetType<typeof ServiceUnavailable, T>;
-export type GatewayTimeout<T> = GetType<typeof GatewayTimeout, T>;
-export type HttpVersionNotSupported<T> = GetType<typeof HttpVersionNotSupported, T>;
+export type Continue<T extends Type> = GetType<typeof Continue, T>;
+export type SwitchingProtocols<T extends Type> = GetType<typeof SwitchingProtocols, T>;
+export type Processing<T extends Type> = GetType<typeof Processing, T>;
+export type EarlyHints<T extends Type> = GetType<typeof EarlyHints, T>;
+export type Ok<T extends Type> = GetType<typeof Ok, T>;
+export type Created<T extends Type> = GetType<typeof Created, T>;
+export type Accepted<T extends Type> = GetType<typeof Accepted, T>;
+export type NonAuthoritativeInformation<T extends Type> = GetType<
+  typeof NonAuthoritativeInformation,
+  T
+>;
+export type NoContent<T extends Type> = GetType<typeof NoContent, T>;
+export type ResetContent<T extends Type> = GetType<typeof ResetContent, T>;
+export type PartialContent<T extends Type> = GetType<typeof PartialContent, T>;
+export type Ambiguous<T extends Type> = GetType<typeof Ambiguous, T>;
+export type MovedPermanently<T extends Type> = GetType<typeof MovedPermanently, T>;
+export type Found<T extends Type> = GetType<typeof Found, T>;
+export type SeeOther<T extends Type> = GetType<typeof SeeOther, T>;
+export type NotModified<T extends Type> = GetType<typeof NotModified, T>;
+export type TemporaryRedirect<T extends Type> = GetType<typeof TemporaryRedirect, T>;
+export type PermanentRedirect<T extends Type> = GetType<typeof PermanentRedirect, T>;
+export type BadRequest<T extends Type> = GetType<typeof BadRequest, T>;
+export type Unauthorized<T extends Type> = GetType<typeof Unauthorized, T>;
+export type PaymentRequired<T extends Type> = GetType<typeof PaymentRequired, T>;
+export type Forbidden<T extends Type> = GetType<typeof Forbidden, T>;
+export type NotFound<T extends Type> = GetType<typeof NotFound, T>;
+export type MethodNotAllowed<T extends Type> = GetType<typeof MethodNotAllowed, T>;
+export type NotAcceptable<T extends Type> = GetType<typeof NotAcceptable, T>;
+export type ProxyAuthenticationRequired<T extends Type> = GetType<
+  typeof ProxyAuthenticationRequired,
+  T
+>;
+export type RequestTimeout<T extends Type> = GetType<typeof RequestTimeout, T>;
+export type Conflict<T extends Type> = GetType<typeof Conflict, T>;
+export type Gone<T extends Type> = GetType<typeof Gone, T>;
+export type LengthRequired<T extends Type> = GetType<typeof LengthRequired, T>;
+export type PreconditionFailed<T extends Type> = GetType<typeof PreconditionFailed, T>;
+export type PayloadTooLarge<T extends Type> = GetType<typeof PayloadTooLarge, T>;
+export type UriTooLong<T extends Type> = GetType<typeof UriTooLong, T>;
+export type UnsupportedMediaType<T extends Type> = GetType<typeof UnsupportedMediaType, T>;
+export type RequestedRangeNotSatisfiable<T extends Type> = GetType<
+  typeof RequestedRangeNotSatisfiable,
+  T
+>;
+export type ExpectationFailed<T extends Type> = GetType<typeof ExpectationFailed, T>;
+export type IAmATeapot<T extends Type> = GetType<typeof IAmATeapot, T>;
+export type Misdirected<T extends Type> = GetType<typeof Misdirected, T>;
+export type UnprocessableEntity<T extends Type> = GetType<typeof UnprocessableEntity, T>;
+export type FailedDependency<T extends Type> = GetType<typeof FailedDependency, T>;
+export type TooManyRequests<T extends Type> = GetType<typeof TooManyRequests, T>;
+export type InternalServerError<T extends Type> = GetType<typeof InternalServerError, T>;
+export type NotImplemented<T extends Type> = GetType<typeof NotImplemented, T>;
+export type BadGateway<T extends Type> = GetType<typeof BadGateway, T>;
+export type ServiceUnavailable<T extends Type> = GetType<typeof ServiceUnavailable, T>;
+export type GatewayTimeout<T extends Type> = GetType<typeof GatewayTimeout, T>;
+export type HttpVersionNotSupported<T extends Type> = GetType<typeof HttpVersionNotSupported, T>;

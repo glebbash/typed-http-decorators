@@ -51,17 +51,33 @@ export enum HttpStatus {
   HTTP_VERSION_NOT_SUPPORTED = 505,
 }
 
-export interface HttpResponse<S extends number, B> {
-  status: S;
-  body: B;
+export interface HttpResponseDefaults {
+  A(): unknown;
+  B(): unknown;
 }
 
 export interface HttpResponseType<
-  S extends number = number,
-  BT extends Type<unknown> = Type<unknown>
+  Status extends number = number,
+  BodyType extends Type<unknown> = Type<unknown>,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  A extends ReturnType<HttpResponseDefaults['A']> = ReturnType<HttpResponseDefaults['A']>,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  B extends ReturnType<HttpResponseDefaults['B']> = ReturnType<HttpResponseDefaults['B']>
 > {
-  status: S;
-  bodyType: BT;
+  status: Status;
+  body: BodyType;
+}
+
+export interface HttpResponse<
+  Status extends number,
+  BodyType extends Type<unknown>,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  A extends ReturnType<HttpResponseDefaults['A']> = ReturnType<HttpResponseDefaults['A']>,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  B extends ReturnType<HttpResponseDefaults['B']> = ReturnType<HttpResponseDefaults['B']>
+> {
+  status: Status;
+  body: InstanceOf<BodyType>;
 }
 
 export type HttpResponseTypes = readonly HttpResponseType[];
@@ -83,6 +99,6 @@ export type ArrayToUnion<A> = A extends readonly [infer X, ...infer XS]
   ? X | ArrayToUnion<XS>
   : never;
 
-export type ValueOf<RT> = RT extends HttpResponseType<infer S, infer BT>
-  ? HttpResponse<S, InstanceOf<BT>>
+export type ValueOf<RT> = RT extends HttpResponseType<infer Status, infer BodyType>
+  ? HttpResponse<Status, BodyType>
   : never;

@@ -29,7 +29,7 @@ Decorate endpoints:
 */
 import './overrides';
 
-import { Method, NotFound, Ok } from 'typed-http-decorators';
+import { Method, NotFound, Ok, t } from 'typed-http-decorators';
 
 class NotFoundDto {
   constructor(public message: string) {}
@@ -42,8 +42,7 @@ class ResourceDto {
 export class ResourceController {
   @Method.Get('resource/:resourceId', {
     permissions: ['resource.get'],
-    // !!! Do not forget to use `as const`, otherwise TypeScript reports type errors
-    responses: [Ok.Type(ResourceDto), NotFound.Type(NotFoundDto)] as const,
+    responses: t(Ok.Type(ResourceDto), NotFound.Type(NotFoundDto)),
   })
   // You can remove return type annotation and still have type safety
   async getResource(): Promise<Ok<ResourceDto> | NotFound<NotFoundDto>> {
@@ -85,7 +84,7 @@ Controller example:
 import { TypedResponseInterceptor } from '../common/typed-response.interceptor'
 import { Controller, UseInterceptors } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
-import { Method, Ok } from 'typed-http-decorators'
+import { Method, Ok, t } from 'typed-http-decorators'
 import { FilmsDto } from './dto/films.dto'
 import { FilmsService } from './films.service'
 
@@ -99,7 +98,7 @@ export class FilmsController {
     @Method.Get('', {
         summary: 'Get all films',
         description: 'Gets all films from the database',
-        responses: [Ok.Type(FilmsDto)] as const,
+        responses: t(Ok.Type(FilmsDto)),
     })
     async getAllFilms() {
         return Ok(

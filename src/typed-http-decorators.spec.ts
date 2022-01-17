@@ -8,6 +8,7 @@ import {
   NotFound,
   Ok,
   setEndpointDecorator,
+  t,
 } from './typed-http-decorators';
 
 describe('typed-http-decorators', () => {
@@ -20,7 +21,7 @@ describe('typed-http-decorators', () => {
 
     class ResourceController {
       @Method.Post('resource', {
-        responses: [Created.Type(ResourceDto), Conflict.Type(ConflictDto)] as const,
+        responses: t(Created.Type(ResourceDto), Conflict.Type(ConflictDto)),
       })
       async createResource(id: string) {
         if (Math.random() > 0.5) {
@@ -31,7 +32,7 @@ describe('typed-http-decorators', () => {
       }
 
       @Method.Get('resource/:resourceId', {
-        responses: [Ok.Type(ResourceDto), NotFound.Type(NotFoundDto)] as const,
+        responses: t(Ok.Type(ResourceDto), NotFound.Type(NotFoundDto)),
       })
       async getResource(id: string) {
         if (Math.random() > 0.5) {
@@ -58,7 +59,7 @@ describe('typed-http-decorators', () => {
     const decorateClass = () => {
       class ResourceController {
         @Method.Post('resource', {
-          responses: [Created.Type(ResourceDto)] as const,
+          responses: t(Created.Type(ResourceDto)),
         })
         async createResource() {
           return Created(new ResourceDto('id', 'name'));

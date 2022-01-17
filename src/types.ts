@@ -51,17 +51,20 @@ export enum HttpStatus {
   HTTP_VERSION_NOT_SUPPORTED = 505,
 }
 
-export type HttpResponse<C extends number, B> = {
-  status: C;
+export interface HttpResponse<S extends number, B> {
+  status: S;
   body: B;
-};
+}
 
-export type HttpResponseType<C extends number, BT extends Type<unknown>> = {
-  status: C;
+export interface HttpResponseType<
+  S extends number = number,
+  BT extends Type<unknown> = Type<unknown>
+> {
+  status: S;
   bodyType: BT;
-};
+}
 
-export type HttpResponseTypes = readonly HttpResponseType<number, Type<unknown>>[];
+export type HttpResponseTypes = readonly HttpResponseType[];
 
 // Helpers
 
@@ -78,4 +81,8 @@ export type TypedPropertyDecorator<T> = (
 
 export type ArrayToUnion<A> = A extends readonly [infer X, ...infer XS]
   ? X | ArrayToUnion<XS>
+  : never;
+
+export type ValueOf<RT> = RT extends HttpResponseType<infer S, infer BT>
+  ? HttpResponse<S, InstanceOf<BT>>
   : never;

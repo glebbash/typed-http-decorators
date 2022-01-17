@@ -1,20 +1,14 @@
 import {
   ArrayToUnion,
   HttpMethod,
-  HttpResponse,
-  HttpResponseType,
   HttpResponseTypes,
-  InstanceOf,
   TypedPropertyDecorator,
+  ValueOf,
 } from './types';
 
 export interface EndpointOptions<RTS extends HttpResponseTypes = HttpResponseTypes> {
   responses: RTS;
 }
-
-export type ValueOf<RT> = RT extends HttpResponseType<infer C, infer BT>
-  ? HttpResponse<C, InstanceOf<BT>>
-  : never;
 
 export type EndpointDecorator<RTS extends HttpResponseTypes> = TypedPropertyDecorator<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

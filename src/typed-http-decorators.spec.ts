@@ -23,7 +23,7 @@ describe('typed-http-decorators', () => {
       @Method.Post('resource', {
         responses: t(Created.Type(ResourceDto), Conflict.Type(ConflictDto)),
       })
-      async createResource(id: string) {
+      async createResource(id: string): Promise<Created<ResourceDto> | Conflict<ConflictDto>> {
         if (Math.random() > 0.5) {
           return Conflict(new ConflictDto(`Resource with id ${id} already exists`));
         }
@@ -34,7 +34,7 @@ describe('typed-http-decorators', () => {
       @Method.Get('resource/:resourceId', {
         responses: t(Ok.Type(ResourceDto), NotFound.Type(NotFoundDto)),
       })
-      async getResource(id: string) {
+      async getResource(id: string): Promise<Ok<ResourceDto> | NotFound<NotFoundDto>> {
         if (Math.random() > 0.5) {
           return NotFound(new NotFoundDto(`Resource with id ${id} not found`));
         }
@@ -61,7 +61,7 @@ describe('typed-http-decorators', () => {
         @Method.Post('resource', {
           responses: t(Created.Type(ResourceDto)),
         })
-        async createResource() {
+        async createResource(): Promise<Created<ResourceDto>> {
           return Created(new ResourceDto('id', 'name'));
         }
       }

@@ -1,3 +1,5 @@
+import { OverrideOrDefault } from './utils/overrides';
+
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'ALL' | 'OPTIONS' | 'HEAD';
 
 export enum HttpStatus {
@@ -56,28 +58,29 @@ export interface HttpResponseDefaults {
   B(): unknown;
 }
 
+export type HttpResponseTypeOptions = OverrideOrDefault<HttpResponseTypeOptionsOverrides>;
+export interface HttpResponseTypeOptionsOverrides {
+  default: Record<string, unknown>;
+}
+
+export type HttpResponseOptions = OverrideOrDefault<HttpResponseOptionsOverrides>;
+export interface HttpResponseOptionsOverrides {
+  default: Record<string, unknown>;
+}
+
 export interface HttpResponseType<
   Status extends number = number,
-  BodyType extends Type<unknown> = Type<unknown>,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  A extends ReturnType<HttpResponseDefaults['A']> = ReturnType<HttpResponseDefaults['A']>,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  B extends ReturnType<HttpResponseDefaults['B']> = ReturnType<HttpResponseDefaults['B']>
+  BodyType extends Type<unknown> = Type<unknown>
 > {
   status: Status;
   body: BodyType;
+  options?: HttpResponseTypeOptions;
 }
 
-export interface HttpResponse<
-  Status extends number,
-  BodyType extends Type<unknown>,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  A extends ReturnType<HttpResponseDefaults['A']> = ReturnType<HttpResponseDefaults['A']>,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  B extends ReturnType<HttpResponseDefaults['B']> = ReturnType<HttpResponseDefaults['B']>
-> {
+export interface HttpResponse<Status extends number, BodyType extends Type<unknown>> {
   status: Status;
   body: InstanceOf<BodyType>;
+  options?: HttpResponseOptions;
 }
 
 export type HttpResponseTypes = readonly HttpResponseType[];

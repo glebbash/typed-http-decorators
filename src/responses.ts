@@ -1,13 +1,27 @@
-import { HttpResponse, HttpResponseType, HttpStatus, InstanceOf, Type } from './types';
+import {
+  HttpResponse,
+  HttpResponseOptions,
+  HttpResponseType,
+  HttpResponseTypeOptions,
+  HttpStatus,
+  InstanceOf,
+  Type,
+} from './types';
 
 const newResponse = <Status extends number>(status: Status) =>
   Object.assign(
-    <BodyType extends Type>(body: InstanceOf<BodyType>): HttpResponse<Status, BodyType> => {
-      return { status, body };
+    <BodyType extends Type>(
+      body: InstanceOf<BodyType>,
+      options?: HttpResponseOptions
+    ): HttpResponse<Status, BodyType> => {
+      return { status, body, options };
     },
     {
-      Type: <BodyType extends Type>(body: BodyType): HttpResponseType<Status, BodyType> => {
-        return { status, body };
+      Type: <BodyType extends Type>(
+        body: BodyType,
+        options?: HttpResponseTypeOptions
+      ): HttpResponseType<Status, BodyType> => {
+        return { status, body, options };
       },
     }
   );

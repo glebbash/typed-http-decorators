@@ -8,6 +8,7 @@ Typesafe decorators for HTTP endpoints which integrates nicely with [Nest.js](ht
 - [typed-http-decorators](#typed-http-decorators)
   - [Installation](#installation)
   - [Usage](#usage)
+  - [Customization](#customization)
   - [Nest.js integration](#nestjs-integration)
   - [Testing](#testing)
 
@@ -41,7 +42,7 @@ class ResourceDto {
 
 export class ResourceController {
   @Method.Get('resource/:resourceId', {
-    permissions: ['resource.get'],
+    permissions: ['resource.get'], // extension
     responses: t(Ok.Type(ResourceDto), NotFound.Type(NotFoundDto)),
   })
   // You can remove return type annotation and still have type safety
@@ -58,13 +59,6 @@ Specify endpoint decorator logic:
 
 import { setEndpointDecorator } from 'typed-http-decorators';
 
-// You can add additional properties to EndpointOptions like this:
-declare module './rest' {
-  interface EndpointOptions {
-    permissions: string[];
-  }
-}
-
 setEndpointDecorator((method, path, { permissions }) => (cls, endpointName) => {
   // Your endpoint decoration logic:
   console.log(
@@ -74,6 +68,34 @@ setEndpointDecorator((method, path, { permissions }) => (cls, endpointName) => {
 });
 ```
 
+## Customization
+
+You can extend `EndpointOptions` like this:
+
+```ts
+declare module 'typed-http-decorators' {
+  interface EndpointOptions {
+    permissions: string[];
+  }
+}
+```
+
+You can completely change `HttpResponseOptions` by setting the `override` field like this:
+
+```ts
+declare module 'typed-http-decorators' {
+  interface HttpResponseOptionsOverrides {
+    override: {
+      description?: string;
+    };
+  }
+}
+```
+
+The original `HttpResponseOptions` is available with `HttpResponseOptionsOverrides["default"]`
+
+You can also override `HttpResponseTypeOptions` in the same way.
+
 ## Nest.js integration
 
 Controller example:
@@ -81,35 +103,36 @@ Controller example:
 ```ts
 // Source: src/films/films.controller.ts
 
-import { TypedResponseInterceptor } from '../common/typed-response.interceptor'
-import { Controller, UseInterceptors } from '@nestjs/common'
-import { ApiTags } from '@nestjs/swagger'
-import { Method, Ok, t } from 'typed-http-decorators'
-import { FilmsDto } from './dto/films.dto'
-import { FilmsService } from './films.service'
+import { TypedResponseInterceptor } from '../common/typed-response.interceptor';
+import { Controller, UseInterceptors } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
+import { Method, Ok, t } from 'typed-http-decorators';
+import { FilmsDto } from './dto/films.dto';
+import { FilmsService } from './films.service';
 
 @ApiTags('films')
 @Controller('films')
 /* You need to transform typed responses to the ones accepted by Nest.js */
 @UseInterceptors(new TypedResponseInterceptor())
 export class FilmsController {
-    constructor(private films: FilmsService) {}
+  constructor(private films: FilmsService) {}
 
-    @Method.Get('', {
-        summary: 'Get all films',
-        description: 'Gets all films from the database',
-        responses: t(Ok.Type(FilmsDto)),
-    })
-    async getAllFilms() {
-        return Ok(
-          new FilmsDto({
-            films: [
-              new FilmDto('id', 'name'),
-              new FilmDto('id', 'name'),
-            ]
-          })
-        )
-    }
+  @Method.Get('', {
+    summary: 'Get all films', // extension
+    description: 'Gets all films from the database', // extension
+    responses: t(
+      Ok.Type(FilmsDto, {
+        description: 'A list of films', // extension
+      })
+    ),
+  })
+  async getAllFilms() {
+    return Ok(
+      new FilmsDto({
+        films: [new FilmDto('id', 'name'), new FilmDto('id', 'name')],
+      })
+    );
+  }
 }
 ```
 
@@ -118,31 +141,37 @@ Decorator logic:
 ```ts
 // Source: src/common/http-decorators-logic.ts
 
-import { applyDecorators, RequestMapping, RequestMethod } from '@nestjs/common'
-import { ApiOperation, ApiResponse } from '@nestjs/swagger'
-import { setEndpointDecorator } from 'typed-http-decorators'
+import { applyDecorators, RequestMapping, RequestMethod } from '@nestjs/common';
+import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { setEndpointDecorator } from 'typed-http-decorators';
 
 declare module 'typed-http-decorators' {
-    interface EndpointOptions {
-        /* This way you force endpoint options to be specified */
-        summary: string
-        /* Or you can also make them optional */
-        description?: string
-    }
+  interface EndpointOptions {
+    /* This way you force endpoint options to be specified */
+    summary: string;
+    /* Or you can also make them optional */
+    description?: string;
+  }
+
+  interface HttpResponseOptionsOverrides {
+    override: {
+      description?: string;
+    };
+  }
 }
 
 setEndpointDecorator((method, path, { responses, summary, description }) =>
-    applyDecorators(
-        // Apply Nest.js specific endpoint decorators
-        RequestMapping({ method: RequestMethod[method], path }),
-        ...responses.map(({ status, bodyType }) =>
-            ApiResponse({ status, type: bodyType }),
-        ),
-
-        // Apply your custom decorators
-        ApiOperation({ summary, description }),
+  applyDecorators(
+    // apply Nest.js specific endpoint decorators
+    RequestMapping({ method: RequestMethod[method], path }),
+    ...responses.map(({ status, body, options }) =>
+      ApiResponse({ status, type: body, description: options?.description })
     ),
-)
+
+    // extensions are also available
+    ApiOperation({ summary, description })
+  )
+);
 ```
 
 Typed responses interceptor:
@@ -151,27 +180,30 @@ Typed responses interceptor:
 // Source: src/common/typed-response.interceptor.ts
 
 import {
-    CallHandler,
-    ExecutionContext,
-    Injectable,
-    InternalServerErrorException,
-    NestInterceptor,
-} from '@nestjs/common'
-import { catchError, map, throwError } from 'rxjs'
+  BadRequestException,
+  CallHandler,
+  ExecutionContext,
+  Injectable,
+  InternalServerErrorException,
+  NestInterceptor,
+} from '@nestjs/common';
+import { catchError, map, throwError } from 'rxjs';
 
 @Injectable()
 export class TypedResponseInterceptor implements NestInterceptor {
-    intercept(context: ExecutionContext, next: CallHandler) {
-        return next.handle().pipe(
-            map(({ status, body }) => {
-                context.switchToHttp().getResponse().status(status)
-                return body
-            }),
-            catchError(() =>
-                throwError(() => new InternalServerErrorException()),
-            ),
+  intercept(context: ExecutionContext, next: CallHandler) {
+    return next.handle().pipe(
+      map(({ status, body }) => {
+        context.switchToHttp().getResponse().status(status);
+        return body;
+      }),
+      catchError((error) =>
+        throwError(() =>
+          !(error instanceof BadRequestException) ? new InternalServerErrorException() : error
         )
-    }
+      )
+    );
+  }
 }
 ```
 
@@ -183,22 +215,22 @@ Entrypoint:
 /*
 !!! Remember to have decorator logic as the first import !!!
 */
-import './common/http-decorators-logic'
-import { NestFactory } from '@nestjs/core'
-import { AppModule } from '@/app.module'
+import './common/http-decorators-logic';
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from '@/app.module';
 
 async function bootstrap() {
-    const app = await NestFactory.create(AppModule)
-    await app.listen(process.env.PORT ?? 3000)
+  const app = await NestFactory.create(AppModule);
+  await app.listen(process.env.PORT ?? 3000);
 }
-bootstrap()
+bootstrap();
 ```
 
 Note: If all your endpoints return typed responses
 you can apply TypedResponseInterceptor globally instead of applying it to each controller:
 
 ```ts
-app.useGlobalInterceptors(new TypedResponseInterceptor())
+app.useGlobalInterceptors(new TypedResponseInterceptor());
 ```
 
 ## Testing
@@ -206,11 +238,12 @@ app.useGlobalInterceptors(new TypedResponseInterceptor())
 When testing your controllers you must also import your decorator logic before applying typed-http-decorators.
 
 You can do this automatically with [Jest](https://jestjs.io/):
+
 ```jsonc
 {
   // jest configuration ...
-  setupFiles: [
-    './src/common/http-decorators-logic.ts', // your decorator logic
+  "setupFiles": [
+    "./src/common/http-decorators-logic.ts" // your decorator logic
     // other setup files ...
   ]
 }

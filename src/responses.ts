@@ -8,21 +8,25 @@ import {
   Type,
 } from './types';
 
+export type ResponseConstructor<Status extends number> = <BodyType extends Type>(
+  body: InstanceOf<BodyType>,
+  options?: HttpResponseOptions
+) => HttpResponse<Status, BodyType>;
+
+export type ResponseTypeConstructor<Status extends number> = <BodyType extends Type>(
+  body: BodyType,
+  options?: HttpResponseTypeOptions
+) => HttpResponseType<Status, BodyType>;
+
 const newResponse = <Status extends number>(status: Status) =>
   Object.assign(
-    <BodyType extends Type>(
-      body: InstanceOf<BodyType>,
-      options?: HttpResponseOptions
-    ): HttpResponse<Status, BodyType> => {
+    ((body, options) => {
       return { status, body, options };
-    },
+    }) as ResponseConstructor<Status>,
     {
-      Type: <BodyType extends Type>(
-        body: BodyType,
-        options?: HttpResponseTypeOptions
-      ): HttpResponseType<Status, BodyType> => {
+      Type: ((body, options) => {
         return { status, body, options };
-      },
+      }) as ResponseTypeConstructor<Status>,
     }
   );
 
